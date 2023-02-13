@@ -1,0 +1,147 @@
+package coding;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Scanner;
+class JobSize{
+	public Integer startTime;
+	public Integer endTime;
+	public Integer earnings;
+	
+	public JobSize() {
+		super();
+	}
+
+	public JobSize(Integer startTime, Integer endTime, Integer earnings) {
+		super();
+		this.startTime = startTime;
+		this.endTime = endTime;
+		this.earnings = earnings;
+		
+	}
+}
+class Pair{
+	public Integer first;
+	public Integer second;
+	public Pair() {
+		super();
+	}
+	public Pair(Integer first, Integer second) {
+		super();
+		this.first = first;
+		this.second = second;
+	}
+}
+class SortingJobs implements Comparator<JobSize>{
+
+	@Override
+	public int compare(JobSize o1, JobSize o2) {
+		if(o1.endTime<o2.endTime) {
+			return 1;
+		}else {
+			return 0;
+		}
+	}	
+}
+public class FactoryEmpProfit {
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		
+		for(int input=1;input<=3;input++){
+			System.out.println("Sample Input: "+ input);
+		
+		System.out.println("Enter the number of Jobs");
+		int n = sc.nextInt();
+		JobSize[] arr=new JobSize[n];
+		int earnings;
+		String startTime,endTime;
+		int total=0;
+		System.out.println(" Enter job start time,end time,and earnings");
+		for(int i=0;i<n;i++) {
+			startTime=sc.next();
+			endTime=sc.next();
+			if(startTime.length()<4) {
+				while(startTime.length()!=4) {
+					startTime+="0";
+				}
+			}
+			if(endTime.length()<4) {
+				while(endTime.length()!=4) {
+					endTime+="0";
+				}
+			}
+			earnings=sc.nextInt();
+			arr[i] = new JobSize();
+			arr[i].startTime = getTime(startTime);
+			arr[i].endTime = getTime(endTime);
+			arr[i].earnings = earnings;
+			total += earnings;
+		}
+		Arrays.sort(arr,new SortingJobs());
+		Pair res = new Pair();
+		res = solve(arr,n);
+		System.out.println("Output: "+ input);
+		System.out.println("The number of tasks and earnings available for others");
+		if(res==null) {
+			System.out.println(0);
+		}else {
+			
+			System.out.print("Task: ");
+			System.out.println(n-res.first);
+			System.out.print("Earnings: ");
+			System.out.println(total-res.second);
+		}
+		
+		System.out.println("***********************");
+		System.out.println();
+		}
+		
+	}
+	private static Pair solve(JobSize[] arr, int n) {
+		if(n==0) {
+			return null;
+		}
+		int dp[]=new int[n];
+		int numOfJobs[]=new int[n];
+		for(int i=0;i<n;i++) {
+			dp[i]=0;
+			numOfJobs[i]=0;
+		}
+		dp[0] = arr[0].earnings;
+		numOfJobs[0]=1;
+		for(int i=1;i<n;i++) {
+			int curr=arr[i].earnings;
+			int num=1;
+			int idx=searchJob(arr,0,i-1,arr[i].startTime);
+			if(idx!=curr && idx!=-1) {
+				curr+=dp[idx];
+				num+=numOfJobs[idx];
+			}
+			if(curr>dp[i-1]) {
+				dp[i]=curr;
+				numOfJobs[i]=num;
+			}else {
+				dp[i]=dp[i-1];
+				numOfJobs[i]=numOfJobs[i-1];
+			}
+		}
+		return new Pair(numOfJobs[n-1],dp[n-1]);
+	}
+	private static int searchJob(JobSize[] arr, int startTime, int endTime, int key) {
+		int ans=-1;
+		while(startTime<=endTime) {
+			int mid=(startTime+endTime)/2;
+			if(arr[mid].endTime<=key) {
+				ans=mid;
+				startTime=mid+1;
+			}else {
+				endTime=mid-1;
+			}
+		}
+		return ans;
+	}
+	private static int getTime(String startTime) {
+		int hr = (startTime.charAt(0)-'0')*10 + (startTime.charAt(1)-'0');
+		int min = (startTime.charAt(2)-'0')*10 + (startTime.charAt(3)-'0');
+		return hr*60 + min;
+	}
+}
